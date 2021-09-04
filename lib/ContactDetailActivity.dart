@@ -5,8 +5,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 class ContactDetailActivity extends StatefulWidget {
-  String id,firstName,lastName,email,avatar;
-  ContactDetailActivity({Key key, this.id,this.firstName,this.lastName,this.email,this.avatar}) : super(key: key);
+  String id,firstName,lastName,email,avatar,from;
+  ContactDetailActivity({Key key, this.id,this.firstName,this.lastName,this.email,this.avatar, this.from}) : super(key: key);
 
   @override
   ContactDetailActivityState createState() => ContactDetailActivityState();
@@ -15,15 +15,26 @@ class ContactDetailActivity extends StatefulWidget {
 class ContactDetailActivityState extends State<ContactDetailActivity> {
   final dio = new Dio();
   List<ContactModel> items = [];
-  final dbHelper = DatabaseHelper.instance;
+  DBHelper dbHelper;
+  Future<List<ContactModel>> contact;
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   @override
   void initState() {
+    dbHelper = DBHelper();
+    refresheContactList();
     super.initState();
+  }
+
+  refresheContactList() {
+    setState(() {
+      contact = dbHelper.getEmployee();
+      print("ABC:"+contact.toString());
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(resizeToAvoidBottomInset: false,
+    return Scaffold(key: _scaffoldKey, resizeToAvoidBottomInset: false,
           extendBody: true,
           backgroundColor: Colors.cyan,
           body: Center(
@@ -84,7 +95,16 @@ class ContactDetailActivityState extends State<ContactDetailActivity> {
                           borderRadius: new BorderRadius.circular(0.0),
                         ),
                       ),
-                      onPressed: () { _insert(widget.firstName, widget.lastName, widget.email, widget.avatar); },
+                      onPressed: () {
+                        if(widget.from=="local"){
+
+                        }else{
+                          setState(() {
+                            dbHelper.add(ContactModel(null,widget.firstName, widget.lastName, widget.email, widget.avatar));
+                            _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text('Add Successfully..!!')));
+                          });
+                        }
+                        },
                       child: Text(
                         "Follow",style: TextStyle(color: Colors.white),
                       ),
@@ -95,30 +115,5 @@ class ContactDetailActivityState extends State<ContactDetailActivity> {
             )),
           )
     );
-  }
-  void _insert(firstName, lastName, email, avatar) async {
-    // row to insert
-    Map<String, dynamic> row = {DatabaseHelper.columnFirstName: firstName, DatabaseHelper.columnLastName: lastName, DatabaseHelper.columnEmail: email, DatabaseHelper.columnAvatar: avatar};
-    ContactModel item = ContactModel.fromMap(row);
-    final id = await dbHelper.insert(item);
-
-    Map singlerow = await dbHelper.queryRowById(id);
-
-    if (singlerow != null) {
-      items.add(ContactModel.fromMap(row));
-      setState(() {});
-    }
-  }
-
-  void _queryAll() async {
-    final allRows = await dbHelper.queryAllRows();
-    items.clear();
-    allRows.forEach((row) => items.add(ContactModel.fromMap(row)));
-    setState(() {});
-  }
-
-  void _delete(id) async {
-    // Assuming that the number of rows is the id for the last row.
-    final rowsDeleted = await dbHelper.delete(id);
   }
 }

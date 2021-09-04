@@ -1,4 +1,5 @@
 import 'package:contact_app/ContactDetailActivity.dart';
+import 'package:contact_app/FavouriteActivity.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
@@ -106,9 +107,8 @@ class HomeState extends State<Home> {
               );
             }).toList(),
           ),
-        ),IconButton(icon: Icon(Icons.favorite, color: Colors.white), onPressed:(){setState(() {
-          users.reversed;
-        });}),
+        ),IconButton(icon: Icon(Icons.favorite, color: Colors.white), onPressed:(){Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => FavouriteActivity()));}),
           ],
       ),
       body: Container(
@@ -142,7 +142,7 @@ class HomeState extends State<Home> {
                 title: Text((users[index]['first_name'])+" "+(users[index]['last_name'])),
                 subtitle: Text((users[index]['email'])),
                 onTap:(){
-                  Navigator.of(context).pushReplacement(
+                  Navigator.of(context).push(
                       MaterialPageRoute(builder: (context) => ContactDetailActivity(id: (users[index]['id'].toString()),avatar: users[index]['avatar'], firstName: users[index]['first_name'],lastName: users[index]['last_name'],email: users[index]['email'])));
                 }
               ),
